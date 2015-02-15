@@ -204,10 +204,10 @@ echo $(git rev-parse HEAD) > build/gitrev.txt
 
 if [ "%{_ossnoss}" == "NOREDIST" -o "%{_ossnoss}" == "noredist" ] ; then
    echo "Executing mvn packaging with non-redistributable libraries ..."
-   mvn -Pawsapi,systemvm -Dnoredist clean package
+   mvn -Pawsapi,systemvm -Dnoredist -Dmaven.test.skip=true clean package
 else
    echo "Executing mvn packaging ..."
-   mvn -Pawsapi,systemvm clean package
+   mvn -Pawsapi,systemvm -Dmaven.test.skip=true clean package
 fi
 
 %install

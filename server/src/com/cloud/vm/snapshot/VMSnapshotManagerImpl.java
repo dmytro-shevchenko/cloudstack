@@ -286,8 +286,11 @@ public class VMSnapshotManagerImpl extends ManagerBase implements VMSnapshotMana
             throw new InvalidParameterValueException("Creating vm snapshot failed due to VM:" + vmId + " is not in the running or Stopped state");
         }
 
-        if(snapshotMemory && userVmVo.getState() == VirtualMachine.State.Stopped){
-            throw new InvalidParameterValueException("Can not snapshot memory when VM is in stopped state");
+        //if(snapshotMemory && userVmVo.getState() == VirtualMachine.State.Stopped){
+        //    throw new InvalidParameterValueException("Can not snapshot memory when VM is in stopped state");
+        //}
+        if(userVmVo.getState() == VirtualMachine.State.Stopped){
+            throw new InvalidParameterValueException("Can not snapshot when VM is in stopped state");
         }
 
         // for KVM, only allow snapshot with memory when VM is in running state

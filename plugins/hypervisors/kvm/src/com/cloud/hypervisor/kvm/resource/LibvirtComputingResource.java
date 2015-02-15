@@ -108,9 +108,13 @@ import com.cloud.agent.api.Command;
 import com.cloud.agent.api.CreatePrivateTemplateFromSnapshotCommand;
 import com.cloud.agent.api.CreatePrivateTemplateFromVolumeCommand;
 import com.cloud.agent.api.CreateStoragePoolCommand;
+import com.cloud.agent.api.CreateVMSnapshotAnswer;
+import com.cloud.agent.api.CreateVMSnapshotCommand;
 import com.cloud.agent.api.CreateVolumeFromSnapshotAnswer;
 import com.cloud.agent.api.CreateVolumeFromSnapshotCommand;
 import com.cloud.agent.api.DeleteStoragePoolCommand;
+import com.cloud.agent.api.DeleteVMSnapshotAnswer;
+import com.cloud.agent.api.DeleteVMSnapshotCommand;
 import com.cloud.agent.api.FenceAnswer;
 import com.cloud.agent.api.FenceCommand;
 import com.cloud.agent.api.GetHostStatsAnswer;
@@ -161,6 +165,8 @@ import com.cloud.agent.api.ReadyCommand;
 import com.cloud.agent.api.RebootAnswer;
 import com.cloud.agent.api.RebootCommand;
 import com.cloud.agent.api.RebootRouterCommand;
+import com.cloud.agent.api.RevertToVMSnapshotCommand;
+import com.cloud.agent.api.RevertToVMSnapshotAnswer;
 import com.cloud.agent.api.SecurityGroupRuleAnswer;
 import com.cloud.agent.api.SecurityGroupRulesCmd;
 import com.cloud.agent.api.SetupGuestNetworkCommand;
@@ -1373,12 +1379,134 @@ public class LibvirtComputingResource extends ServerResourceBase implements Serv
                 return execute((OvsVpcPhysicalTopologyConfigCommand) cmd);
             } else if (cmd instanceof OvsVpcRoutingPolicyConfigCommand) {
                 return execute((OvsVpcRoutingPolicyConfigCommand) cmd);
+            } else if (cmd instanceof CreateVMSnapshotCommand) {
+                return execute((CreateVMSnapshotCommand) cmd);
+            } else if (cmd instanceof DeleteVMSnapshotCommand) {
+                return execute((DeleteVMSnapshotCommand) cmd);
+            } else if (cmd instanceof RevertToVMSnapshotCommand) {
+                return execute((RevertToVMSnapshotCommand) cmd);
             } else {
                 s_logger.warn("Unsupported command ");
                 return Answer.createUnsupportedCommandAnswer(cmd);
             }
         } catch (final IllegalArgumentException e) {
             return new Answer(cmd, false, e.getMessage());
+        }
+    }
+
+    //Create live VM snapshot
+    public Answer execute(CreateVMSnapshotCommand cmd) { // Create live VM
+                                                         // Snapshot for KVM
+        s_logger.debug("Creating VM snapshot");
+        try {
+            String snapshotNameShort = cmd.getTarget().getDescription();
+            String snapshotName = cmd.getTarget().getSnapshotName();
+            String vmName = cmd.getVmName();
+
+            final Script command = new Script(_manageVmSnapshotPath, _cmdsTimeout, s_logger);
+            command.add("-c"); // create
+            command.add(vmName);
+            command.add("-n"); // snapshot name
+            command.add(snapshotName);
+            s_logger.info("\nExecuting command: " + command.toString() + "\n");
+            // managevmsnapshot.sh -c test-vm -n snap-name
+            String result = command.execute();
+            if (result != null) {
+                s_logger.debug("Failed to create snapshot: " + result);
+                return new ManageSnapshotAnswer(cmd, false,
+                        "Failed to create snapshot: " + result);
+            }
+            try {
+                CreateVMSnapshotAnswer asnwer = new CreateVMSnapshotAnswer(cmd,
+                        true, result);
+                asnwer.setVolumeTOs(cmd.getVolumeTOs());
+                s_logger.debug("Sending answer to server");
+                return asnwer;
+            } catch (Exception e) {
+                s_logger.debug("Failed to process answer: " + e.toString());
+                return new ManageSnapshotAnswer(cmd, false,
+                        "Failed to manage snapshot: " + e.toString());
+            }
+        } catch (Exception e) {
+            s_logger.debug("Failed to create VM snapshot: " + e.toString());
+            return new ManageSnapshotAnswer(cmd, false,
+                    "Failed to manage snapshot: " + e.toString());
+        }
+    }
+
+    //Delete live VM snapshot
+    public Answer execute(DeleteVMSnapshotCommand cmd) {
+        s_logger.debug("Deleting VM snapshot");
+        try {
+            String snapshotNameShort = cmd.getTarget().getDescription();
+            String snapshotName = cmd.getTarget().getSnapshotName();
+            String vmName = cmd.getVmName();
+
+            final Script command = new Script(_manageVmSnapshotPath, _cmdsTimeout, s_logger);
+            command.add("-d"); // delete
+            command.add(vmName);
+            command.add("-n"); // snapshot name
+            command.add(snapshotName);
+            s_logger.info("\nExecuting command: " + command.toString() + "\n");
+            // managevmsnapshot.sh -d test-vm -n snap-name
+            String result = command.execute();
+            if (result != null) {
+                s_logger.debug("Failed to delete snapshot: " + result);
+                return new ManageSnapshotAnswer(cmd, false,
+                        "Failed to delete snapshot: " + result);
+            }
+            try {
+                DeleteVMSnapshotAnswer asnwer = new DeleteVMSnapshotAnswer(cmd, true, result);
+                asnwer.setVolumeTOs(cmd.getVolumeTOs());
+                s_logger.debug("Sending answer to server");
+                return asnwer;
+            } catch (Exception e) {
+                s_logger.debug("Failed to process answer: " + e.toString());
+                return new ManageSnapshotAnswer(cmd, false,
+                        "Failed to manage snapshot: " + e.toString());
+            }
+        } catch (Exception e) {
+            s_logger.debug("Failed to delete VM snapshot: " + e.toString());
+            return new ManageSnapshotAnswer(cmd, false,
+                    "Failed to manage snapshot: " + e.toString());
+        }
+    }
+
+    //Revert live VM snapshot
+    public Answer execute(RevertToVMSnapshotCommand cmd) {
+        s_logger.debug("Reverting VM snapshot");
+        try {
+            String snapshotNameShort = cmd.getTarget().getDescription();
+            String snapshotName = cmd.getTarget().getSnapshotName();
+            String vmName = cmd.getVmName();
+
+            final Script command = new Script(_manageVmSnapshotPath, _cmdsTimeout, s_logger);
+            command.add("-r"); // revert
+            command.add(vmName);
+            command.add("-n"); // snapshot name
+            command.add(snapshotName);
+            s_logger.info("\nExecuting command: " + command.toString() + "\n");
+            // managevmsnapshot.sh -r test-vm -n snap-name
+            String result = command.execute();
+            if (result != null) {
+                s_logger.debug("Failed to revert snapshot: " + result);
+                return new ManageSnapshotAnswer(cmd, false,
+                        "Failed to revert snapshot: " + result);
+            }
+            try {
+                RevertToVMSnapshotAnswer asnwer = new RevertToVMSnapshotAnswer(cmd, true, result);
+                asnwer.setVolumeTOs(cmd.getVolumeTOs());
+                s_logger.debug("Sending answer to server");
+                return asnwer;
+            } catch (Exception e) {
+                s_logger.debug("Failed to process answer: " + e.toString());
+                return new ManageSnapshotAnswer(cmd, false,
+                        "Failed to manage snapshot: " + e.toString());
+            }
+        } catch (Exception e) {
+            s_logger.debug("Failed to delete VM snapshot: " + e.toString());
+            return new ManageSnapshotAnswer(cmd, false,
+                    "Failed to manage snapshot: " + e.toString());
         }
     }
 

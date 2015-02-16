@@ -306,6 +306,7 @@ public class LibvirtComputingResource extends ServerResourceBase implements Serv
     private String _patchViaSocketPath;
     private String _createvmPath;
     private String _manageSnapshotPath;
+    private String _manageVmSnapshotPath;
     private String _resizeVolumePath;
     private String _createTmplPath;
     private String _heartBeatPath;

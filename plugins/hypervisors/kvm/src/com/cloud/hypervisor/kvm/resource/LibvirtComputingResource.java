@@ -669,6 +669,11 @@ public class LibvirtComputingResource extends ServerResourceBase implements Serv
             throw new ConfigurationException("Unable to find the managesnapshot.sh");
         }
 
+        _manageVmSnapshotPath = Script.findScript(storageScriptsDir, "managevmsnapshot.sh");
+        if (_manageSnapshotPath == null) {
+            throw new ConfigurationException("Unable to find the managevmsnapshot.sh");
+        }
+
         _resizeVolumePath = Script.findScript(storageScriptsDir, "resizevolume.sh");
         if (_resizeVolumePath == null) {
             throw new ConfigurationException("Unable to find the resizevolume.sh");

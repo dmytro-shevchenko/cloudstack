@@ -49,12 +49,13 @@ function packaging() {
         DEFREL="-D_rel SNAPSHOT"
     else
         if [[ $date_append ]]; then
-    	    echo "Building with date mark $date_append"
-    	    VERSION=`echo $VERSION\_$date_append`
-	fi
-	REALVER=`echo $VERSION`
-	DEFVER="-D_ver $REALVER"
-        DEFREL="-D_rel 1"
+    	    echo "Building with release version as date mark $date_append"
+    	    DEFREL="-D_rel $date_append"
+    	else
+			DEFREL="-D_rel 1"
+		fi
+		REALVER=`echo $VERSION`
+		DEFVER="-D_ver $REALVER"
     fi
 
     echo Preparing to package Apache CloudStack ${VERSION}

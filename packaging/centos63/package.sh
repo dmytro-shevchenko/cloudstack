@@ -16,9 +16,11 @@
 # specific language governing permissions and limitations
 # under the License.
 
+#set -x
+
 function usage() {
     echo ""
-    echo "usage: ./package.sh [-p|--pack] [-h|--help] [ARGS]"
+    echo "usage: ./package.sh [-p|--pack] [-d|--date_append] [-h|--help] [ARGS]"
     echo ""
     echo "The commonly used Arguments are:"
     echo "oss|OSS             To package with only redistributable libraries (default)"
@@ -26,6 +28,7 @@ function usage() {
     echo ""
     echo "Examples: ./package.sh -p|--pack oss|OSS"
     echo "          ./package.sh -p|--pack noredist|NOREDIST"
+    echo "          ./package.sh -d|--date_append oss|OSS"
     echo "          ./package.sh (Default OSS)"
     exit 1
 }
@@ -46,7 +49,12 @@ function packaging() {
         DEFREL="-D_rel SNAPSHOT"
     else
         REALVER=`echo $VERSION`
-        DEFVER="-D_ver $REALVER"
+        if [[ $date_append ]]; then
+    	    echo "Building with date mark $date_append"
+    	    DEFVER="-D_ver $REALVER-$date_append"
+        else
+    	    DEFVER="-D_ver $REALVER"
+        fi
         DEFREL="-D_rel 1"
     fi
 
@@ -74,8 +82,8 @@ function packaging() {
 if [ $# -lt 1 ] ; then
     packaging
 elif [ $# -gt 0 ] ; then
-    SHORTOPTS="hp:"
-    LONGOPTS="help,pack:"
+    SHORTOPTS="hpd:"
+    LONGOPTS="help,pack,date_append:"
 
     ARGS=$(getopt -s bash -u -a --options $SHORTOPTS  --longoptions $LONGOPTS --name $0 -- "$@" )
     eval set -- "$ARGS"
@@ -90,7 +98,7 @@ elif [ $# -gt 0 ] ; then
             echo "Doing CloudStack Packaging ....."
             packageval=$2
             if [ "$packageval" == "oss" -o "$packageval" == "OSS" ] ; then
-                packaging
+                packaging 
             elif [ "$packageval" == "noredist" -o "$packageval" == "NOREDIST" ] ; then
                 packaging noredist
             else
@@ -98,6 +106,11 @@ elif [ $# -gt 0 ] ; then
                 exit 1
             fi
             ;;
+        -d | --date_append)
+    	    echo "Doing CloudStack Packaging with current date....."
+    	    date_append=$(date +%Y%m%d%H%M)
+    	    packaging
+    	    ;;
         -)
             echo "Unrecognized option..."
             usage

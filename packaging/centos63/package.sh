@@ -51,7 +51,7 @@ function packaging() {
         REALVER=`echo $VERSION`
         if [[ $date_append ]]; then
     	    echo "Building with date mark $date_append"
-    	    DEFVER="-D_ver $REALVER-$date_append"
+    	    DEFVER="-D_ver $REALVER_$date_append"
         else
     	    DEFVER="-D_ver $REALVER"
         fi

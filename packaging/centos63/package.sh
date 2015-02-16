@@ -48,13 +48,12 @@ function packaging() {
         DEFPRE="-D_prerelease 1"
         DEFREL="-D_rel SNAPSHOT"
     else
-        REALVER=`echo $VERSION`
         if [[ $date_append ]]; then
     	    echo "Building with date mark $date_append"
-    	    DEFVER="-D_ver $REALVER_$date_append"
-        else
-    	    DEFVER="-D_ver $REALVER"
-        fi
+    	    VERSION=`echo $VERSION\_$date_append`
+	fi
+	REALVER=`echo $VERSION`
+	DEFVER="-D_ver $REALVER"
         DEFREL="-D_rel 1"
     fi
 

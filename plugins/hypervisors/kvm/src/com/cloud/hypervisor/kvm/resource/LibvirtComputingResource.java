@@ -181,6 +181,7 @@ import com.cloud.agent.api.UnPlugNicAnswer;
 import com.cloud.agent.api.UnPlugNicCommand;
 import com.cloud.agent.api.UpgradeSnapshotCommand;
 import com.cloud.agent.api.VmDiskStatsEntry;
+import com.cloud.agent.api.VMSnapshotTO;
 import com.cloud.agent.api.VmStatsEntry;
 import com.cloud.agent.api.check.CheckSshAnswer;
 import com.cloud.agent.api.check.CheckSshCommand;
@@ -1400,19 +1401,23 @@ public class LibvirtComputingResource extends ServerResourceBase implements Serv
         }
     }
 
+    //region Custom tweaks for KVM snapshots
     //Create full VM snapshot
-    public Answer execute(CreateVMSnapshotCommand cmd) { // Create live VM
-                                                         // Snapshot for KVM
+    public Answer execute(CreateVMSnapshotCommand cmd) {
         s_logger.debug("Creating VM snapshot");
         try {
             String snapshotNameShort = cmd.getTarget().getDescription();
             String snapshotName = cmd.getTarget().getSnapshotName();
             String vmName = cmd.getVmName();
 
+            VMSnapshotTO snapSpec = cmd.getTarget();
+            String snap = snapSpec.toString();
+
             final Script command = new Script(_manageVmSnapshotPath, _cmdsTimeout, s_logger);
             command.add("create");
             command.add(vmName);
             command.add(snapshotName);
+            command.add(snap);
             s_logger.info("\nExecuting command: " + command.toString() + "\n");
             // managevmsnapshot.py create test-vm snapshot-name
             String result = command.execute();
@@ -1510,6 +1515,7 @@ public class LibvirtComputingResource extends ServerResourceBase implements Serv
                     "Failed to manage snapshot: " + e.toString());
         }
     }
+    //endregion
 
     private OvsFetchInterfaceAnswer execute(OvsFetchInterfaceCommand cmd) {
         String label = cmd.getLabel();

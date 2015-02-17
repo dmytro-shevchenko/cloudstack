@@ -91,7 +91,7 @@ elif hasattr(args, 'revert'):
     pass
 elif hasattr(args, 'list'):
     snapshots = Libvirt().get_snapshot_list(args.vmname)
-    print(snapshots)
+    print('snapshots ' + snapshots)
 else:
     print('No valid command found!')
     sys.exit(1)

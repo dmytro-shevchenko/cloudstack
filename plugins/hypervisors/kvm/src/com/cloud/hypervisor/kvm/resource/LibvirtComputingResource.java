@@ -669,9 +669,9 @@ public class LibvirtComputingResource extends ServerResourceBase implements Serv
             throw new ConfigurationException("Unable to find the managesnapshot.sh");
         }
 
-        _manageVmSnapshotPath = Script.findScript(storageScriptsDir, "managevmsnapshot.sh");
+        _manageVmSnapshotPath = Script.findScript(storageScriptsDir, "managevmsnapshot.py");
         if (_manageSnapshotPath == null) {
-            throw new ConfigurationException("Unable to find the managevmsnapshot.sh");
+            throw new ConfigurationException("Unable to find the managevmsnapshot.py");
         }
 
         _resizeVolumePath = Script.findScript(storageScriptsDir, "resizevolume.sh");
@@ -1400,7 +1400,7 @@ public class LibvirtComputingResource extends ServerResourceBase implements Serv
         }
     }
 
-    //Create live VM snapshot
+    //Create full VM snapshot
     public Answer execute(CreateVMSnapshotCommand cmd) { // Create live VM
                                                          // Snapshot for KVM
         s_logger.debug("Creating VM snapshot");
@@ -1410,33 +1410,28 @@ public class LibvirtComputingResource extends ServerResourceBase implements Serv
             String vmName = cmd.getVmName();
 
             final Script command = new Script(_manageVmSnapshotPath, _cmdsTimeout, s_logger);
-            command.add("-c"); // create
+            command.add("create");
             command.add(vmName);
-            command.add("-n"); // snapshot name
             command.add(snapshotName);
             s_logger.info("\nExecuting command: " + command.toString() + "\n");
-            // managevmsnapshot.sh -c test-vm -n snap-name
+            // managevmsnapshot.py create test-vm snapshot-name
             String result = command.execute();
             if (result != null) {
                 s_logger.debug("Failed to create snapshot: " + result);
-                return new ManageSnapshotAnswer(cmd, false,
-                        "Failed to create snapshot: " + result);
+                return new ManageSnapshotAnswer(cmd, false, "Failed to create snapshot: " + result);
             }
             try {
-                CreateVMSnapshotAnswer asnwer = new CreateVMSnapshotAnswer(cmd,
-                        true, result);
+                CreateVMSnapshotAnswer asnwer = new CreateVMSnapshotAnswer(cmd, true, result);
                 asnwer.setVolumeTOs(cmd.getVolumeTOs());
                 s_logger.debug("Sending answer to server");
                 return asnwer;
             } catch (Exception e) {
                 s_logger.debug("Failed to process answer: " + e.toString());
-                return new ManageSnapshotAnswer(cmd, false,
-                        "Failed to manage snapshot: " + e.toString());
+                return new ManageSnapshotAnswer(cmd, false, "Failed to manage snapshot: " + e.toString());
             }
         } catch (Exception e) {
             s_logger.debug("Failed to create VM snapshot: " + e.toString());
-            return new ManageSnapshotAnswer(cmd, false,
-                    "Failed to manage snapshot: " + e.toString());
+            return new ManageSnapshotAnswer(cmd, false, "Failed to manage snapshot: " + e.toString());
         }
     }
 

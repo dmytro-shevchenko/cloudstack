@@ -81,6 +81,7 @@ Requires: /usr/bin/ssh-keygen
 Requires: mkisofs
 Requires: MySQL-python
 Requires: python-paramiko
+Requires: python-argparse
 Requires: ipmitool
 Requires: %{name}-common = %{_ver}
 Requires: %{name}-awsapi = %{_ver} 

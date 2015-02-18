@@ -5,8 +5,8 @@ from string import Template
 
 snapshot_xml_template = """
 <domainsnapshot>
-  <name>$name</name>
-  <description>$description</description>
+  <name>$snapshotname</name>
+  <description></description>
   <state>$state</state>
   <memory snapshot='internal'/>
   <disks>
@@ -31,25 +31,35 @@ class Libvirt():
             print('Failed to get VM: ' + error.message)
             sys.exit(1)
 
-    def __form_snapshot_XML(self, vm):
-        values = {'vmname': '', 'vmid': 0}
-        src = Template(snapshot_xml_template)
-        result = src.substitute(values)
-        return result
+    def __form_snapshot_XML(self, snapshotname):
+        try:
+            values = {'snapshotname': snapshotname,
+                      'state': 'running'}
+            src = Template(snapshot_xml_template)
+            result = src.substitute(values)
+            return result
+        except Exception as error:
+            print('Error forming snapshot XML file! {0}'.format(str(error)))
+            sys.exit(1)
 
-    def create_snapshot(self, vmname, snapshotname, description):
+    def create_snapshot(self, vmname, snapshotname):
         vm = self.__get_vm(vmname)
-        result = vm.snapshotCreateXML(self.__form_snapshot_XML(vm), libvirt.VIR_DOMAIN_SNAPSHOT_CREATE_ATOMIC)
-        return [True, 'Snapshot successfully created for {0}.'.format(vmname)]
+        try:
+            result = vm.snapshotCreateXML(self.__form_snapshot_XML(snapshotname),
+                                          libvirt.VIR_DOMAIN_SNAPSHOT_CREATE_ATOMIC)
+            return result
+        except Exception as error:
+            print('Error creating snapshot for {0}: {1}'.format(vmname, str(error)))
+            sys.exit(1)
 
     def get_snapshot_list(self, vmname):
         try:
             vm = self.__get_vm(vmname)
-            return vm.snapshotListNames()
-        except libvirt.libvirtError as error:
+            result = vm.snapshotListNames(0)
+            return result
+        except Exception as error:
             print('Failed to get VM {0}'.format(str(error)))
             return None
-
 
 
 def parse_arguments():
@@ -73,15 +83,11 @@ def parse_arguments():
 
 def create_snapshot(vmname, snapshot):
     virt = Libvirt()
-    result = virt.create_snapshot(vmname, snapshot, '')
-    print(result[1])
-    if result[0]:
-        sys.exit(0)
-    else:
-        sys.exit(1)
+    result = virt.create_snapshot(vmname, snapshot)
+    print(str(result))
 
 
-
+sys.exit(1)
 args = parse_arguments()
 if hasattr(args, 'create'):
     create_snapshot(args.vmname, args.snapshot)
@@ -91,7 +97,7 @@ elif hasattr(args, 'revert'):
     pass
 elif hasattr(args, 'list'):
     snapshots = Libvirt().get_snapshot_list(args.vmname)
-    print('snapshots ' + snapshots)
+    print('snapshots: ' + str(snapshots))
 else:
     print('No valid command found!')
     sys.exit(1)

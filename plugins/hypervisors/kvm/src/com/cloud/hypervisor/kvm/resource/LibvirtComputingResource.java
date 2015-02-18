@@ -1407,12 +1407,12 @@ public class LibvirtComputingResource extends ServerResourceBase implements Serv
         s_logger.debug("Creating VM snapshot");
         try {
             //VirtualMachineTO vmSpec = null;
-            //VMSnapshotTO snapSpec = cmd.getTarget();
+            VMSnapshotTO snapSpec = cmd.getTarget();
             //LibvirtVMDef vm = createVMFromSpec(vmSpec);
             //String xml = vm.toString();
 
             VirtualMachineTO vmSpec = cmd.getVirtualMachineTO();
-            
+
             String snapshotDescription = cmd.getTarget().getDescription();
             String snapshotName = cmd.getTarget().getSnapshotName();
             String vmName = cmd.getVmName();

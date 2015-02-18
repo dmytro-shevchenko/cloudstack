@@ -82,11 +82,11 @@ public class VMSnapshotBaseCommand extends Command {
         this.platformEmulator = platformEmulator;
     }
 
-    public VirtualMachineTO getVirtualMachineTO() { 
-        return vm; 
+    public VirtualMachineTO getVirtualMachineTO() {
+        return vm;
     }
-    
-    public void setVirtualMachineTO(VirtualMachineTO vm) { 
-        this.vm = vm; 
+
+    public void setVirtualMachineTO(VirtualMachineTO vm) {
+        this.vm = vm;
     }
 }

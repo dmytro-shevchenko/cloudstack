@@ -24,6 +24,7 @@ import java.util.Map;
 import javax.inject.Inject;
 import javax.naming.ConfigurationException;
 
+import com.cloud.agent.api.to.VirtualMachineTO;
 import org.apache.log4j.Logger;
 
 import org.apache.cloudstack.engine.subsystem.api.storage.StrategyPriority;
@@ -136,6 +137,8 @@ public class DefaultVMSnapshotStrategy extends ManagerBase implements VMSnapshot
             HostVO host = hostDao.findById(hostId);
             GuestOSHypervisorVO guestOsMapping = guestOsHypervisorDao.findByOsIdAndHypervisor(guestOS.getId(), host.getHypervisorType().toString(), host.getHypervisorVersion());
             CreateVMSnapshotCommand ccmd = new CreateVMSnapshotCommand(userVm.getInstanceName(), target, volumeTOs, guestOS.getDisplayName(), userVm.getState());
+            ccmd.setVirtualMachineTO(null); //put real vm here
+            
             if (guestOsMapping == null) {
                 ccmd.setPlatformEmulator(null);
             } else {

@@ -1406,18 +1406,20 @@ public class LibvirtComputingResource extends ServerResourceBase implements Serv
     public Answer execute(CreateVMSnapshotCommand cmd) {
         s_logger.debug("Creating VM snapshot");
         try {
-            String snapshotNameShort = cmd.getTarget().getDescription();
+            //VirtualMachineTO vmSpec = null;
+            //VMSnapshotTO snapSpec = cmd.getTarget();
+            //LibvirtVMDef vm = createVMFromSpec(vmSpec);
+            //String xml = vm.toString();
+
+            VirtualMachineTO vmSpec = cmd.getVirtualMachineTO();
+            
+            String snapshotDescription = cmd.getTarget().getDescription();
             String snapshotName = cmd.getTarget().getSnapshotName();
             String vmName = cmd.getVmName();
-
-            VMSnapshotTO snapSpec = cmd.getTarget();
-            String snap = snapSpec.toString();
-
             final Script command = new Script(_manageVmSnapshotPath, _cmdsTimeout, s_logger);
             command.add("create");
             command.add(vmName);
             command.add(snapshotName);
-            command.add(snap);
             s_logger.info("\nExecuting command: " + command.toString() + "\n");
             // managevmsnapshot.py create test-vm snapshot-name
             String result = command.execute();

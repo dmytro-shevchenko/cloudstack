@@ -19,6 +19,7 @@ package com.cloud.agent.api;
 
 import java.util.List;
 
+import com.cloud.agent.api.to.VirtualMachineTO;
 import org.apache.cloudstack.storage.to.VolumeObjectTO;
 
 public class VMSnapshotBaseCommand extends Command {
@@ -27,6 +28,7 @@ public class VMSnapshotBaseCommand extends Command {
     protected String vmName;
     protected String guestOSType;
     protected String platformEmulator;
+    protected VirtualMachineTO vm;
 
     public VMSnapshotBaseCommand(String vmName, VMSnapshotTO snapshot, List<VolumeObjectTO> volumeTOs, String guestOSType) {
         this.vmName = vmName;
@@ -78,5 +80,13 @@ public class VMSnapshotBaseCommand extends Command {
 
     public void setPlatformEmulator(String platformEmulator) {
         this.platformEmulator = platformEmulator;
+    }
+
+    public VirtualMachineTO getVirtualMachineTO() { 
+        return vm; 
+    }
+    
+    public void setVirtualMachineTO(VirtualMachineTO vm) { 
+        this.vm = vm; 
     }
 }

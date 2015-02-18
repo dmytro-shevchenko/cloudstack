@@ -137,8 +137,9 @@ public class DefaultVMSnapshotStrategy extends ManagerBase implements VMSnapshot
             HostVO host = hostDao.findById(hostId);
             GuestOSHypervisorVO guestOsMapping = guestOsHypervisorDao.findByOsIdAndHypervisor(guestOS.getId(), host.getHypervisorType().toString(), host.getHypervisorVersion());
             CreateVMSnapshotCommand ccmd = new CreateVMSnapshotCommand(userVm.getInstanceName(), target, volumeTOs, guestOS.getDisplayName(), userVm.getState());
-            ccmd.setVirtualMachineTO(null); //put real vm here
-            
+            ccmd.setVirtualMachineTO(null);
+            VirtualMachineTO vmTo = null;
+
             if (guestOsMapping == null) {
                 ccmd.setPlatformEmulator(null);
             } else {
